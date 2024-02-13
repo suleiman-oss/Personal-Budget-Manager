@@ -55,7 +55,7 @@ func (s *UserService) DeleteUser(userID uint) error {
 	return s.DB.Delete(&models.User{}, userID).Error
 }
 
-func VerifyPassword(hashedPassword, password string) bool {
+func (s *UserService) VerifyPassword(hashedPassword, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
 }

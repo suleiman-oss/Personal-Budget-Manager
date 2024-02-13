@@ -9,29 +9,32 @@ import (
 	"github.com/suleiman/Personal-Budget-Manager/services"
 )
 
+type UserController struct {
+	UserService *services.UserService
+}
+
 // CreateUser creates a new user
-func CreateUser(c *gin.Context) {
+func (ucr *UserController) CreateUser(c *gin.Context) {
 	var user models.User
-	userService := &services.UserService{}
 	if err := c.BindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := userService.CreateUser(&user); err != nil {
+	if err := ucr.UserService.CreateUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully", "user": user})
+	//c.Redirect(http.StatusAccepted, "/login")
 }
 
 // GetUserByID retrieves a user by ID
-func GetUserByID(c *gin.Context) {
+func (ucr *UserController) GetUserByID(c *gin.Context) {
 	userID := c.Param("id")
 	i, _ := strconv.Atoi(userID)
-	userService := &services.UserService{}
-	user, err := userService.GetUserByID(uint(i))
+	user, err := ucr.UserService.GetUserByID(uint(i))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -41,17 +44,16 @@ func GetUserByID(c *gin.Context) {
 }
 
 // UpdateUser updates an existing user
-func UpdateUser(c *gin.Context) {
+func (ucr *UserController) UpdateUser(c *gin.Context) {
 	userID := c.Param("id")
 	i, _ := strconv.Atoi(userID)
 	var user models.User
-	userService := &services.UserService{}
 	if err := c.BindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := userService.UpdateUser(uint(i), &user); err != nil {
+	if err := ucr.UserService.UpdateUser(uint(i), &user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
@@ -60,14 +62,50 @@ func UpdateUser(c *gin.Context) {
 }
 
 // DeleteUser deletes a user by ID
-func DeleteUser(c *gin.Context) {
+func (ucr *UserController) DeleteUser(c *gin.Context) {
 	userID := c.Param("id")
 	i, _ := strconv.Atoi(userID)
-	userService := &services.UserService{}
-	if err := userService.DeleteUser(uint(i)); err != nil {
+	if err := ucr.UserService.DeleteUser(uint(i)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+func (ucr *UserController) Login(c *gin.Context) {
+	input := models.LoginInput{}
+	// Bind and validate input
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check if email and password are provided
+	if input.Email == "" || input.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
+		c.Abort()
+		return
+	}
+
+	// Authenticate user
+	user, err := ucr.UserService.GetUserByEmail(input.Email)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email"})
+		c.Abort()
+		return
+	}
+
+	// Verify password
+	if !ucr.UserService.VerifyPassword(user.Password, input.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		c.Abort()
+		return
+	}
+
+	// Attach user information to the context
+	c.Set("user", user)
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
+	// Proceed to the next handler
+	//c.Next()
 }
