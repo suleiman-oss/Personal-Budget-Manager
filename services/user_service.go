@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/suleiman/Personal-Budget-Manager/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // UserService provides CRUD operations for the User model
@@ -20,6 +21,16 @@ func (s *UserService) GetUserByID(userID uint) (*models.User, error) {
 	var user models.User
 	err := s.DB.First(&user, userID).Error
 	return &user, err
+}
+func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := s.DB.Where("email = ?", email).First(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, nil // Return nil if the user is not found
+		}
+		return nil, err
+	}
+	return &user, nil
 }
 
 // UpdateUser updates an existing user
@@ -42,4 +53,9 @@ func (s *UserService) UpdateUser(userID uint, updatedUser *models.User) error {
 // DeleteUser deletes a user by ID
 func (s *UserService) DeleteUser(userID uint) error {
 	return s.DB.Delete(&models.User{}, userID).Error
+}
+
+func VerifyPassword(hashedPassword, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	return err == nil
 }
