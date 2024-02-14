@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
@@ -28,6 +30,8 @@ func ConnectionString() (string, string) {
 func main() {
 	// Initialize Gin
 	router := gin.Default()
+	store := cookie.NewStore([]byte("secret"))
+	router.Use(sessions.Sessions("mysession", store))
 	// Open connection to PostgreSQL
 	driver, connectionString := ConnectionString()
 	db, err := gorm.Open(driver, connectionString)
@@ -44,23 +48,34 @@ func main() {
 
 	log.Println("Connected to PostgreSQL database")
 	models.Migrate(db)
+	cr := controllers.Controller{}
 	ucr := controllers.UserController{}
 	ucr.UserService = &services.UserService{}
 	ucr.UserService.DB = db
+	bcr := controllers.BudgetController{}
+	bcr.BudgetService = &services.BudgetService{}
+	bcr.BudgetService.DB = db
+	cr.UserController = &ucr
+	cr.BudgetController = &bcr
 	// Set up routes
-	setupRoutes(router, &ucr)
+	setupRoutes(router, &cr)
 
 	// Run the server
 	router.Run("localhost:8087")
 }
 
-func setupRoutes(router *gin.Engine, ucr *controllers.UserController) {
+func setupRoutes(router *gin.Engine, cr *controllers.Controller) {
 
-	router.POST("/register", ucr.CreateUser)
-	router.POST("/login", ucr.Login)
+	router.POST("/register", cr.UserController.CreateUser)
+	router.POST("/login", cr.UserController.Login)
 	userRouter := router.Group("/users")
 	{
-		userRouter.PUT("/:id", ucr.UpdateUser)    // Update a user
-		userRouter.DELETE("/:id", ucr.DeleteUser) // Delete a user
+		userRouter.PUT("/:id", cr.UserController.UpdateUser)    // Update a user
+		userRouter.DELETE("/:id", cr.UserController.DeleteUser) // Delete a user
+	}
+	budgetRouter := router.Group("/budget")
+	{
+		budgetRouter.GET("/", cr.BudgetController.GetAllBudgets)
+		budgetRouter.POST("/newbudget", cr.BudgetController.CreateBudget)
 	}
 }

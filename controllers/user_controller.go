@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/suleiman/Personal-Budget-Manager/models"
 	"github.com/suleiman/Personal-Budget-Manager/services"
@@ -102,9 +103,9 @@ func (ucr *UserController) Login(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-	// Attach user information to the context
-	c.Set("user", user)
+	session := sessions.Default(c)
+	session.Set("userID", user.ID)
+	session.Save()
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
 	// Proceed to the next handler
 	//c.Next()
