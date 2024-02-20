@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/IBM/sarama"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -53,13 +54,11 @@ func main() {
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("mysession", store))
 	db := GetDB()
-	go runCronJob(db)
+	kafkaProducer := InitKafkaProducer()
+	go runCronJob(db, kafkaProducer)
 	cr := controllers.NewController(db)
-
-	// Set up routes
 	setupRoutes(router, cr)
 	defer ClearSessionOnExit()
-	// Run the server
 	router.Run("localhost:8087")
 }
 func ClearSessionOnExit() {
@@ -70,12 +69,12 @@ func ClearSessionOnExit() {
 		fmt.Println("Failed to clear session on exit:", err)
 	}
 }
-func runCronJob(db *gorm.DB) {
+func runCronJob(db *gorm.DB, producer sarama.AsyncProducer) {
 	c := cron.New()
 
 	// Add a function to the cron scheduler using a closure to capture the db instance
-	c.AddFunc("0 18 * * *", func() {
-		services.CheckExpense(db) // Pass the db instance to the checkExpenses function
+	c.AddFunc("18 18 * * *", func() {
+		services.CheckExpense(db, producer) // Pass the db instance to the checkExpenses function
 	})
 
 	// Start the cron scheduler
@@ -83,6 +82,13 @@ func runCronJob(db *gorm.DB) {
 
 	// Keep the main goroutine alive forever
 	select {}
+}
+func InitKafkaProducer() sarama.AsyncProducer {
+	producer, err := sarama.NewAsyncProducer([]string{"kafka-broker:9092"}, nil)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	return producer
 }
 func setupRoutes(router *gin.Engine, cr *controllers.Controller) {
 
