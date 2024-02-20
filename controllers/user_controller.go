@@ -107,6 +107,16 @@ func (ucr *UserController) Login(c *gin.Context) {
 	session.Set("userID", user.ID)
 	session.Save()
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
-	// Proceed to the next handler
-	//c.Next()
+}
+func (ucr *UserController) Logout(c *gin.Context) {
+	// Get session
+	session := sessions.Default(c)
+
+	// Clear session data
+	session.Clear()
+
+	// Save the session to apply changes
+	session.Save()
+
+	c.JSON(http.StatusOK, gin.H{"message": "Session cleared successfully"})
 }

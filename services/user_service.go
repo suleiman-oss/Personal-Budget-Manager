@@ -44,7 +44,6 @@ func (s *UserService) UpdateUser(userID uint, updatedUser *models.User) error {
 	existingUser.Username = updatedUser.Username
 	existingUser.Email = updatedUser.Email
 	existingUser.Password = updatedUser.Password
-	existingUser.Role = updatedUser.Role
 
 	// Save the updated user to the database
 	return s.DB.Save(existingUser).Error

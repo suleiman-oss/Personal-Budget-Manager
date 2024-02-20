@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -37,6 +38,9 @@ func (bcr *BudgetController) CreateBudget(c *gin.Context) {
 	}
 	// Assign the user ID to the budget
 	budget.UserID = userIDUint
+	now := time.Now()
+	currentMonth := now.Format("2006-01")
+	budget.Month = string(currentMonth)
 
 	// Create the budget in the database
 	if err := bcr.BudgetService.DB.Create(&budget).Error; err != nil {
@@ -70,6 +74,7 @@ func (bcr *BudgetController) GetBudgetByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, budget)
 }
+
 func (bcr *BudgetController) GetAllBudgets(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := session.Get("userID")

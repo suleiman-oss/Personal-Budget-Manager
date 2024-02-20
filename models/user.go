@@ -3,11 +3,12 @@ package models
 import "golang.org/x/crypto/bcrypt"
 
 type User struct {
-	ID       uint   `json:"id" gorm:"primaryKey"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	ID              uint    `json:"id" gorm:"primaryKey"`
+	Username        string  `json:"username"`
+	Email           string  `json:"email"`
+	Password        string  `json:"password"`
+	Income          float64 `json:"income"`
+	PreviousSavings float64 `json:"previousSavings"`
 }
 
 func (user *User) BeforeSave() error {
