@@ -3,9 +3,9 @@ package services
 import (
 	"time"
 
-	"github.com/IBM/sarama"
 	"github.com/jinzhu/gorm"
 	"github.com/suleiman/Personal-Budget-Manager/models"
+	"gopkg.in/Shopify/sarama.v1"
 )
 
 // NotificationService provides CRUD operations for the Notification model
@@ -34,7 +34,7 @@ func (s *NotificationService) UpdateNotification(notification *models.Notificati
 func (s *NotificationService) DeleteNotification(notificationID uint) error {
 	return s.DB.Delete(&models.Notification{}, notificationID).Error
 }
-func CheckExpense(db *gorm.DB, producer sarama.AsyncProducer) {
+func CheckExpense(db *gorm.DB, producer sarama.SyncProducer) {
 	s := NotificationService{}
 	s.DB = db
 	now := time.Now()

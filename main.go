@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/IBM/sarama"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -18,6 +17,7 @@ import (
 	"github.com/suleiman/Personal-Budget-Manager/controllers"
 	"github.com/suleiman/Personal-Budget-Manager/models"
 	"github.com/suleiman/Personal-Budget-Manager/services"
+	"gopkg.in/Shopify/sarama.v1"
 )
 
 // ConnectionString returns the connection string for PostgreSQL
@@ -81,7 +81,7 @@ func ClearSessionOnExit() {
 		fmt.Println("Failed to clear session on exit:", err)
 	}
 }
-func runCronJob(db *gorm.DB, producer sarama.AsyncProducer) {
+func runCronJob(db *gorm.DB, producer sarama.SyncProducer) {
 	c := cron.New()
 
 	// Add a function to the cron scheduler using a closure to capture the db instance
@@ -95,8 +95,12 @@ func runCronJob(db *gorm.DB, producer sarama.AsyncProducer) {
 	// Keep the main goroutine alive forever
 	select {}
 }
-func InitKafkaProducer() sarama.AsyncProducer {
-	producer, err := sarama.NewAsyncProducer([]string{"kafka-broker:9092"}, nil)
+func InitKafkaProducer() sarama.SyncProducer {
+	config := sarama.NewConfig()
+	config.Producer.RequiredAcks = sarama.WaitForAll
+	config.Producer.Retry.Max = 5
+	config.Producer.Return.Successes = true
+	producer, err := sarama.NewSyncProducer([]string{"localhost:9092"}, config)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
