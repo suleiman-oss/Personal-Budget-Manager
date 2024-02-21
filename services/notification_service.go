@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/suleiman/Personal-Budget-Manager/models"
+	"github.com/suleiman-oss/Personal-Budget-Manager/models"
 	"gopkg.in/Shopify/sarama.v1"
 )
 

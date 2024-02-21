@@ -1,4 +1,4 @@
-module github.com/suleiman/Personal-Budget-Manager
+module github.com/suleiman-oss/Personal-Budget-Manager
 
 go 1.21.4
 

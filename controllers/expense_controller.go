@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/suleiman/Personal-Budget-Manager/models"
-	"github.com/suleiman/Personal-Budget-Manager/services"
+	"github.com/suleiman-oss/Personal-Budget-Manager/models"
+	"github.com/suleiman-oss/Personal-Budget-Manager/services"
 )
 
 type ExpenseController struct {

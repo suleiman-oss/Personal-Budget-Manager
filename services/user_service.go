@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/suleiman/Personal-Budget-Manager/models"
+	"github.com/suleiman-oss/Personal-Budget-Manager/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

@@ -13,10 +13,10 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	"github.com/robfig/cron/v3"
-	"github.com/suleiman/Personal-Budget-Manager/config"
-	"github.com/suleiman/Personal-Budget-Manager/controllers"
-	"github.com/suleiman/Personal-Budget-Manager/models"
-	"github.com/suleiman/Personal-Budget-Manager/services"
+	"github.com/suleiman-oss/Personal-Budget-Manager/config"
+	"github.com/suleiman-oss/Personal-Budget-Manager/controllers"
+	"github.com/suleiman-oss/Personal-Budget-Manager/models"
+	"github.com/suleiman-oss/Personal-Budget-Manager/services"
 	"gopkg.in/Shopify/sarama.v1"
 )
 

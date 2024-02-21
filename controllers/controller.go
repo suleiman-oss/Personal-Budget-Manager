@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/suleiman/Personal-Budget-Manager/services"
+	"github.com/suleiman-oss/Personal-Budget-Manager/services"
 )
 
 type Controller struct {
