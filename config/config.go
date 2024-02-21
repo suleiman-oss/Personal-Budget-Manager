@@ -9,6 +9,7 @@ type Config struct {
 	DBUser     string `mapstructure:"DBUser"`
 	DBPassword string `mapstructure:"DBPassword"`
 	DBName     string `mapstructure:"DBName"`
+	Port       string `mapstructure:"Port"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

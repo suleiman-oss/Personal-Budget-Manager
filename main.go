@@ -51,6 +51,7 @@ func GetDB() *gorm.DB {
 func main() {
 	// Initialize Gin
 	router := gin.Default()
+	router.Use(CORSMiddleware())
 	store := cookie.NewStore([]byte("secret"))
 	router.Use(sessions.Sessions("mysession", store))
 	db := GetDB()
@@ -59,7 +60,18 @@ func main() {
 	cr := controllers.NewController(db)
 	setupRoutes(router, cr)
 	defer ClearSessionOnExit()
-	router.Run("localhost:8087")
+	//router.Run("localhost:8087")
+	config, err := config.LoadConfig("utils/")
+	if err != nil {
+		log.Fatal("cannot load config:", err.Error())
+	}
+	port := config.Port
+	if port == "" {
+		port = "localhost:8087"
+	}
+	if err := router.Run(port); err != nil {
+		log.Panicf("error: %s", err)
+	}
 }
 func ClearSessionOnExit() {
 	// Perform an internal request to clear the session
@@ -109,5 +121,21 @@ func setupRoutes(router *gin.Engine, cr *controllers.Controller) {
 	{
 		expenseRouter.GET("/", cr.ExpenseController.GetAllExpenses)
 		expenseRouter.POST("/newexpense", cr.ExpenseController.CreateExpense)
+	}
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
 	}
 }
